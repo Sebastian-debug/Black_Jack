@@ -111,7 +111,7 @@ def hit():
     player_1.add_cards(new_deck.deal_one())
     print_start_cards()
     if player_bust_check(player_1.get_value_list()):
-        print("You are busted! You lost!")
+        print("\nYou are busted! You lost!")
         return False
     return True
 
