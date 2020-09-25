@@ -71,7 +71,10 @@ class Dealer:
         self.all_cards = []
 
     def add_cards(self, new_cards):
-        self.all_cards.append(new_cards)
+        if isinstance(new_cards, list):
+            self.all_cards.extend(new_cards)
+        else:
+            self.all_cards.append(new_cards)
 
     def get_value_list(self):
         return [x.value for x in self.all_cards]
@@ -90,22 +93,23 @@ def player_bust_check(cards):
     return False
 
 
-def print_cards(name, all_cards, dealer=False):
-    if not dealer:
-        print(f"{name} your cards are: ")
-    else:
-        print(f"Dealer {name} has: ")
-    for cards in range(len(all_cards)):
-        print(f'{all_cards[cards]}', end='')
-        if cards + 1 < len(all_cards):
-            print(", ", end='')
-        else:
-            print("\n")
+def print_start_cards():
+    print(f"\nDealer {dealer.name}'s Hand:")
+    print(" <card hidden>")
+    print('', dealer.all_cards[1])
+    print(f"\n{player_1.name}'s Hand:", *player_1.all_cards, sep='\n ')
+
+
+def print_all_cards():
+    print(f"\nDealer {dealer.name}'s Hand:", *dealer.all_cards, sep='\n ')
+    print(f"Dealer {dealer.name}'s Hand =", sum(dealer.get_value_list()))
+    print(f"\n{player_1.name}'s Hand:", *player_1.all_cards, sep='\n ')
+    print(f"{player_1.name}'s Hand =", sum(player_1.get_value_list()))
 
 
 def hit():
     player_1.add_cards(new_deck.deal_one())
-    print_cards(player_1.name, player_1.all_cards)
+    print_start_cards()
     if player_bust_check(player_1.get_value_list()):
         print("You are busted! You lost!")
         return False
@@ -113,17 +117,17 @@ def hit():
 
 
 def check_lose_win_tie():
+    print_all_cards()
     while True:
-        if 16 < sum(dealer.get_value_list()) < 22:
+        if sum(dealer.get_value_list()) > 16:
             break
         dealer.add_cards(new_deck.deal_one())
-
+        print_all_cards()
         if player_bust_check(dealer.get_value_list()):
-            print_cards(dealer.name, dealer.all_cards, True)
             print(f"\nDealer busted! Congrats you have won {bet * 2}€!")
             player_1.player_wins(bet * 2)
             return
-    print_cards(dealer.name, dealer.all_cards, True)
+
     if sum(dealer.get_value_list()) > sum(player_1.get_value_list()):
         print("\nDealer won! You lost!")
         return
@@ -139,44 +143,42 @@ def check_lose_win_tie():
 
 
 if __name__ == "__main__":
-    player_1 = Player("Sebastian", 500)
+    player_1 = Player("Max", 500)
     dealer = Dealer()
     new_deck = Deck()
     new_deck.shuffle()
 
-    print("Welcome to BlackJack!\n")
+    print("Welcome to BlackJack!")
     game_on = True
     while game_on:
-        print("\n" * 2)
+        print("\n")
         player_1.get_balance()
         try:
             bet = int(input("Please place your bet: "))
             if not player_1.place_bet(bet):
                 continue
         except ValueError:
-            print("That was not a valid value!")
+            print("That was not a valid value, it must be an integer!")
             continue
         player_1.add_cards([new_deck.deal_one(), new_deck.deal_one()])
-        print_cards(player_1.name, player_1.all_cards)
-        dealer.add_cards(new_deck.deal_one())
-        print_cards(dealer.name, dealer.all_cards, True)
+        dealer.add_cards([new_deck.deal_one(), new_deck.deal_one()])
+        print_start_cards()
         while True:
+            choice = input("\nStand or Hit? Enter 's' or 'h: ").lower()
 
-            choice = input("\nStand or Hit:").lower()
-            if choice != "stand" and choice != "hit":
-                print("Please choose between stand or hit!")
-                continue
-
-            if choice == "stand":
-                print_cards(dealer.name, dealer.all_cards, True)
+            if choice == "s":
+                print("Player stands. Dealer is playing.")
                 check_lose_win_tie()
                 game_on = False
                 break
 
-            if choice == "hit":
+            elif choice == "h":
                 if not hit():
                     game_on = False
                     break
+            else:
+                print("Please choose between stand or hit! Enter 'h' or 's': ")
+                continue
 
         if not game_on:
             player_1.get_balance()
