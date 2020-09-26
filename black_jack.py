@@ -57,9 +57,6 @@ class Player:
         else:
             self.all_cards.append(new_cards)
 
-    def get_value_list(self):
-        return [x.value for x in self.all_cards]
-
     def get_balance(self):
         print(f"Your balance is {self.balance}€")
 
@@ -76,8 +73,9 @@ class Dealer:
         else:
             self.all_cards.append(new_cards)
 
-    def get_value_list(self):
-        return [x.value for x in self.all_cards]
+
+def get_value_list(card_list):
+    return [x.value for x in card_list]
 
 
 def player_bust_check(cards):
@@ -102,37 +100,37 @@ def print_start_cards():
 
 def print_all_cards():
     print(f"\nDealer {dealer.name}'s Hand:", *dealer.all_cards, sep='\n ')
-    print(f"Dealer {dealer.name}'s Hand =", sum(dealer.get_value_list()))
+    print(f"Dealer {dealer.name}'s Hand =", sum(get_value_list(dealer.all_cards)))
     print(f"\n{player_1.name}'s Hand:", *player_1.all_cards, sep='\n ')
-    print(f"{player_1.name}'s Hand =", sum(player_1.get_value_list()))
+    print(f"{player_1.name}'s Hand =", sum(get_value_list(player_1.all_cards)))
 
 
 def hit():
     player_1.add_cards(new_deck.deal_one())
     print_start_cards()
-    if player_bust_check(player_1.get_value_list()):
+    if player_bust_check(get_value_list(player_1.all_cards)):
         print("\nYou are busted! You lost!")
         return False
     return True
 
 
-def check_lose_win_tie():
+def stand_check_lose_win_tie():
     print_all_cards()
     while True:
-        if sum(dealer.get_value_list()) > 16:
+        if sum(get_value_list(dealer.all_cards)) > 16:
             break
         dealer.add_cards(new_deck.deal_one())
         print_all_cards()
-        if player_bust_check(dealer.get_value_list()):
+        if player_bust_check(get_value_list(dealer.all_cards)):
             print(f"\nDealer busted! Congrats you have won {bet * 2}€!")
             player_1.player_wins(bet * 2)
             return
 
-    if sum(dealer.get_value_list()) > sum(player_1.get_value_list()):
+    if sum(get_value_list(dealer.all_cards)) > sum(get_value_list(player_1.all_cards)):
         print("\nDealer won! You lost!")
         return
 
-    elif sum(dealer.get_value_list()) < sum(player_1.get_value_list()):
+    elif sum(get_value_list(dealer.all_cards)) < sum(get_value_list(player_1.all_cards)):
         print(f"\nCongrats you have won {bet * 2}€!")
         player_1.player_wins(bet * 2)
         return
@@ -168,7 +166,7 @@ if __name__ == "__main__":
 
             if choice == "s":
                 print("Player stands. Dealer is playing.")
-                check_lose_win_tie()
+                stand_check_lose_win_tie()
                 game_on = False
                 break
 
