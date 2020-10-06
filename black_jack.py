@@ -1,8 +1,8 @@
 import random
 
 suits = ('Hearts', 'Diamonds', 'Spades', 'Clubs')
-ranks = ('Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King', 'Ace')
-values = {'Two': 2, 'Three': 3, 'Four': 4, 'Five': 5, 'Six': 6, 'Seven': 7, 'Eight': 8,
+ranks = ('Ace1', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King', 'Ace')
+values = {'Ace1': 1, 'Two': 2, 'Three': 3, 'Four': 4, 'Five': 5, 'Six': 6, 'Seven': 7, 'Eight': 8,
           'Nine': 9, 'Ten': 10, 'Jack': 10, 'Queen': 10, 'King': 10, 'Ace': 11}
 
 
@@ -14,7 +14,7 @@ class Card:
         self.value = values[rank]
 
     def __str__(self):
-        return self.rank + " of " + self.suit
+        return (self.rank if self.rank != "Ace1" else "Ace") + " of " + self.suit
 
 
 class Deck:
@@ -24,7 +24,8 @@ class Deck:
 
         for suit in suits:
             for rank in ranks:
-                self.all_cards.append(Card(suit, rank))
+                if rank != 'Ace1':
+                    self.all_cards.append(Card(suit, rank))
 
     def shuffle(self):
         random.shuffle(self.all_cards)
@@ -78,13 +79,19 @@ def get_value_list(card_list):
     return [x.value for x in card_list]
 
 
-def player_bust_check(cards):
+def player_bust_check(real_cards):
+    cards = get_value_list(real_cards)
     ace_count = cards.count(11)
     sum_cards = sum(cards)
     if sum_cards > 21:
         while ace_count > 0:
             sum_cards -= 10
             ace_count -= 1
+            for real_card in real_cards:
+                if real_card.rank == "Ace":
+                    real_card.rank = "Ace1"
+                    real_card.value = 1
+                    break
             if sum_cards < 22:
                 return False
         return True
@@ -108,7 +115,8 @@ def print_all_cards():
 def hit():
     player_1.add_cards(new_deck.deal_one())
     print_start_cards()
-    if player_bust_check(get_value_list(player_1.all_cards)):
+    if player_bust_check(player_1.all_cards):
+        print_all_cards()
         print("\nYou are busted! You lost!")
         return False
     return True
@@ -121,7 +129,7 @@ def stand_check_lose_win_tie():
             break
         dealer.add_cards(new_deck.deal_one())
         print_all_cards()
-        if player_bust_check(get_value_list(dealer.all_cards)):
+        if player_bust_check(dealer.all_cards):
             print(f"\nDealer busted! Congrats you have won {bet * 2}€!")
             player_1.player_wins(bet * 2)
             return
@@ -182,7 +190,7 @@ if __name__ == "__main__":
             player_1.get_balance()
             while True:
                 replay = input("Do you want play another round? (YES/NO):").lower()
-                if replay == "yes" or "no":
+                if replay == "yes" or replay == "no":
                     break
             if replay == "yes":
                 if player_1.balance == 0:
